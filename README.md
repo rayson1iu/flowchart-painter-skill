@@ -4,11 +4,13 @@
 
 ## Demo
 
-下面是一个双分支规划流程。左侧蓝色是摄像头 / LiDAR 分支，右侧绿色是 PNC 向量分支。两路特征汇入紫色的 `FusionBackbone`，再由 `PlannerDecoder` 输出自车路径、轨迹和概率。
+**World4Scorer 整体模型架构**。左侧是候选轨迹生成、评分与选轨的推理流程。右侧并列展示生成候选、轨迹库候选和日志执行轨迹三条训练分支，紫色区域标出共用模块。
 
-![BEV 与 PNC 双分支融合流程图](assets/style-example.svg)
+![World4Scorer 整体模型架构图](assets/style-example.png)
 
-[查看可编辑 SVG](assets/style-example.svg)
+[可编辑 SVG](assets/style-example.svg) · [高清 PNG](assets/style-example.png)
+
+本图由 `$flowchart` 根据论文图 2 和第 3 节重绘。来源为 [Outcome-Grounded World Modeling for Autonomous Driving](https://arxiv.org/html/2609.36438v1#S3)。
 
 ## 配色与绘图风格
 

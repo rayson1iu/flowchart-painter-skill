@@ -38,7 +38,7 @@ description: 将文字、ASCII 草图或现有流程整理为浅色分区、圆�
 
 以约 1200 单位宽画布为基准：分区圆角 20–24，节点圆角 12–16，描边 2，连线 2–2.5，标题字号 26–28，正文 22–24。按实际复杂度调整画布高度和间距，不强制正方形。箭头颜色跟随连线；共用流用紫色。中文字体优先 `PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif`，先确认导出环境支持中文。
 
-用户提供参考图时，可以借鉴它的绘图风格，包括分区布局、配色、节点样式、字体层级、留白和连线。节点内容和连接关系以当前任务为准。需要默认外观示例时，查看 [assets/style-example.svg](assets/style-example.svg)。
+用户提供参考图时，可以借鉴它的绘图风格，包括分区布局、配色、节点样式、字体层级、留白和连线。节点内容和连接关系以当前任务为准。需要默认外观示例时，查看 [World4Scorer 架构图（SVG）](assets/style-example.svg) 或 [PNG 预览](assets/style-example.png)。示例展示推理与训练并排分区、多条训练分支对齐和共享模块高亮，内容依据[论文图 2 和第 3 节](https://arxiv.org/html/2609.36438v1#S3)。
 
 ## SVG 优先制作
 

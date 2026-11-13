@@ -1,42 +1,251 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
-<title>BEV 与向量上下文融合规划流程图</title>
-<desc>摄像头 / LiDAR 经 SharedBEVEncoder，PNC 向量上下文经 VectorEncoder，汇入 FusionBackbone，再经 PlannerDecoder 输出自车路径 / 轨迹 / 概率。所有标签为可编辑文字。</desc>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7e58c2"/></marker></defs>
-<rect width="1200" height="1200" fill="white"/>
-<g font-family="PingFang SC, Microsoft YaHei, Arial, sans-serif" text-anchor="middle">
-<rect x="40" y="32" width="540" height="528" rx="22" fill="#edf4ff"/>
-<rect x="620" y="32" width="540" height="528" rx="22" fill="#eaf8f3"/>
-
-<text x="310" y="89" font-size="28" fill="#3479d6" font-weight="400">摄像头 / LiDAR</text>
-<text x="890" y="89" font-size="28" fill="#159c88" font-weight="400">PNC 向量上下文</text>
-<path id="sensor-input" d="M310 111 V151" fill="none" stroke="#3479d6" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<path id="vector-input" d="M890 111 V151" fill="none" stroke="#159c88" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect id="shared-bev-encoder" x="100" y="155" width="420" height="316" rx="14" fill="white" stroke="#5088dc" stroke-width="2"/>
-<text x="310" y="199" font-size="27" fill="#3479d6" font-weight="400">SharedBEVEncoder</text>
-<text x="310" y="247" font-size="24" fill="#778497" font-weight="400">图像 ResNet + Neck</text>
-<text x="310" y="291" font-size="24" fill="#778497" font-weight="400">View Transformer</text>
-<text x="310" y="335" font-size="24" fill="#778497" font-weight="400">PointPillar</text>
-<text x="310" y="379" font-size="24" fill="#778497" font-weight="400">LiDAR 时序 Bank</text>
-<text x="310" y="423" font-size="24" fill="#778497" font-weight="400">BEV Fusion</text>
-<rect id="vector-encoder" x="680" y="155" width="420" height="158" rx="14" fill="white" stroke="#35a995" stroke-width="2"/>
-<text x="890" y="199" font-size="27" fill="#159c88" font-weight="400">VectorEncoder</text>
-<text x="890" y="246" font-size="24" fill="#778497" font-weight="400">UniModel LightMap</text>
-<text x="890" y="282" font-size="24" fill="#778497" font-weight="400">Encoder</text>
-<path id="bev-to-merge" d="M310 471 V592 H600" fill="none" stroke="#3479d6" stroke-width="2.5" stroke-linejoin="round"/>
-<rect x="153" y="496" width="314" height="38" rx="5" fill="#edf4ff"/>
-<text x="310" y="523" font-size="22" fill="#3479d6" font-weight="400">fused BEV 多尺度特征</text>
-<path id="vector-to-merge" d="M890 313 V592 H600" fill="none" stroke="#159c88" stroke-width="2.5" stroke-linejoin="round"/>
-<path id="merge-to-fusion" d="M600 592 V632" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect id="fusion-backbone" x="350" y="636" width="500" height="146" rx="14" fill="white" stroke="#9a77d5" stroke-width="2"/>
-<text x="600" y="677" font-size="28" fill="#865ac9" font-weight="400">FusionBackbone</text>
-<text x="600" y="719" font-size="24" fill="#778497" font-weight="400">BEV token → Ego Query</text>
-<text x="600" y="756" font-size="24" fill="#778497" font-weight="400">Cross-Attention</text>
-<path id="fusion-to-planner" d="M600 782 V824" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect id="planner-decoder" x="350" y="828" width="500" height="144" rx="14" fill="white" stroke="#9a77d5" stroke-width="2"/>
-<text x="600" y="869" font-size="28" fill="#865ac9" font-weight="400">PlannerDecoder</text>
-<text x="600" y="911" font-size="24" fill="#778497" font-weight="400">UniModel LightMap</text>
-<text x="600" y="947" font-size="24" fill="#778497" font-weight="400">Flow Matching</text>
-<path id="planner-to-output" d="M600 972 V1014" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect id="output" x="350" y="1018" width="500" height="66" rx="14" fill="#f4effb" stroke="#9a77d5" stroke-width="2"/>
-<text x="600" y="1060" font-size="27" fill="#865ac9" font-weight="400">自车路径 / 轨迹 / 概率</text>
-</g></svg>
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="diagram-title diagram-desc" width="1640" height="1200" viewBox="0 0 1640 1200" role="img">
+  <title id="diagram-title">World4Scorer 整体模型架构</title>
+  <desc id="diagram-desc">左侧为四视角图像到最终规划轨迹的推理流程。右侧显示生成候选、轨迹库候选与日志执行轨迹分别调用同一预测器，并接受仿真结果和未来视觉监督。</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="9" markerHeight="9" viewBox="0 0 10 10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#5088dc" />
+    </marker>
+    <marker id="arrow-green" markerWidth="9" markerHeight="9" viewBox="0 0 10 10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#35a995" />
+    </marker>
+    <marker id="arrow-purple" markerWidth="9" markerHeight="9" viewBox="0 0 10 10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9a77d5" />
+    </marker>
+    <marker id="arrow-orange" markerWidth="9" markerHeight="9" viewBox="0 0 10 10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d58a32" />
+    </marker>
+    <marker id="arrow-slate" markerWidth="9" markerHeight="9" viewBox="0 0 10 10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#8395ae" />
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1640" height="1200" rx="0" fill="#ffffff" id="canvas" />
+  <text x="44" y="83" fill="#20324c" font-size="46" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="700" text-anchor="start">World4Scorer 整体模型架构</text>
+  <text x="46" y="119" fill="#56677e" font-size="22" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="start">基于轨迹条件世界模型的自动驾驶规划</text>
+  <g id="panels">
+    <rect x="44" y="154" width="538" height="1000" rx="23" fill="#edf4ff" id="inference-panel" />
+    <rect x="606" y="154" width="990" height="1000" rx="23" fill="#eaf8f3" id="training-panel" />
+    <rect x="620" y="342" width="962" height="196" rx="17" fill="#f4effb" id="shared-parameters-panel" />
+    <text x="68" y="201" fill="#245da8" font-size="26" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="650" text-anchor="start">推理 · 生成、评分与选轨</text>
+    <text x="630" y="201" fill="#107766" font-size="26" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="650" text-anchor="start">训练 · 结果监督与未来预测</text>
+    <text x="1570" y="199" fill="#6941ac" font-size="18" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="end">三路分别前向，共享 φ 与 P · 两路评分共享 H</text>
+  </g>
+  <g id="connections">
+    <path id="cameras-to-backbone" d="M 320 300 V 325" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="backbone-to-scene-tokens" d="M 320 393 V 419" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="scene-tokens-to-generator" d="M 320 473 V 499" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="generator-to-action-encoder" d="M 320 564 V 585" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="action-encoder-to-predictor" d="M 320 646 V 666" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="predictor-to-score-heads" d="M 320 754 V 775" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="score-heads-to-utility" d="M 320 844 V 864" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="utility-to-reranking" d="M 320 936 V 952" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="reranking-to-output" d="M 320 1035 V 1059" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="scene-tokens-to-cross-attention" d="M 165 446 H 111 V 709 H 165" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="ego-state-to-score-heads" d="M 147 810 H 165" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="candidate-coordinates-to-reranking" d="M 475 532 H 544 V 986 H 475" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="previous-plan-to-reranking" d="M 147 992 H 165" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="selected-plan-carried-to-next-frame" d="M 320 1115 V 1134 H 104 V 1018" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" stroke-dasharray="6 5" />
+    <path id="generated-trajectory-to-encoder" d="M 780 307 V 358" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="generated-query-to-predictor" d="M 780 423 V 449" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="generated-state-to-head" d="M 780 521 V 560" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="generated-head-to-loss" d="M 654 629 V 811" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="generated-target-to-loss" d="M 795 772 V 811" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="generated-loss-to-joint-objective" d="M 780 888 V 937" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+    <path id="bank-trajectory-to-encoder" d="M 1101 307 V 358" fill="none" stroke="#35a995" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-green)" />
+    <path id="bank-query-to-predictor" d="M 1101 423 V 449" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="bank-state-to-head" d="M 1101 521 V 560" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="bank-head-to-loss" d="M 975 629 V 811" fill="none" stroke="#35a995" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-green)" />
+    <path id="bank-target-to-loss" d="M 1116 772 V 811" fill="none" stroke="#35a995" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-green)" />
+    <path id="bank-loss-to-joint-objective" d="M 1101 888 V 937" fill="none" stroke="#35a995" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+    <path id="executed-trajectory-to-encoder" d="M 1422 307 V 358" fill="none" stroke="#d58a32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-orange)" />
+    <path id="executed-query-to-predictor" d="M 1422 423 V 449" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="executed-state-to-head" d="M 1422 521 V 560" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <path id="executed-head-to-loss" d="M 1296 629 V 811" fill="none" stroke="#d58a32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-orange)" />
+    <path id="executed-target-to-loss" d="M 1437 772 V 811" fill="none" stroke="#d58a32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-orange)" />
+    <path id="executed-loss-to-joint-objective" d="M 1422 888 V 937" fill="none" stroke="#d58a32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+    <path id="generated-candidates-to-simulator" d="M 928 269 H 940 V 724 H 910" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+    <path id="joint-loss-merge" d="M 780 937 H 1422" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+    <path id="shared-objectives-to-joint-loss" d="M 1101 937 V 979" fill="none" stroke="#9a77d5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-purple)" />
+    <circle id="joint-objective-branch" cx="1101" cy="937" r="3.4" fill="#9a77d5" />
+    <path id="imitation-to-joint-loss" d="M 928 1028 H 953" fill="none" stroke="#5088dc" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+  </g>
+  <g id="modules">
+    <g id="current-observations">
+      <rect x="165" y="232" width="310" height="68" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="320.0" y="262.35" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">当前帧 · 四路摄像头</text>
+      <text x="320.0" y="284.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">每路 672 × 1148</text>
+    </g>
+    <g id="dinov2-backbone">
+      <rect x="165" y="325" width="310" height="68" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="320.0" y="355.35" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">DINOv2 ViT-S/14</text>
+      <text x="320.0" y="377.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">LoRA rank 32</text>
+    </g>
+    <g id="scene-tokens">
+      <rect x="165" y="419" width="310" height="54" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="320.0" y="453.35" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">场景 tokens  s<tspan baseline-shift="sub" font-size="72%">t</tspan>
+      </text>
+    </g>
+    <g id="trajectory-generator">
+      <rect x="165" y="499" width="310" height="65" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="320.0" y="527.85" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">轨迹生成器</text>
+      <text x="320.0" y="549.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">Transformer → 64 条候选轨迹</text>
+    </g>
+    <g id="action-encoder">
+      <rect x="165" y="585" width="310" height="61" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="611.85" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Action Encoder φ</text>
+      <text x="320.0" y="633.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">轨迹坐标 → 查询 tokens</text>
+    </g>
+    <g id="shared-predictor">
+      <rect x="165" y="666" width="310" height="88" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="695.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">共享预测器 P</text>
+      <text x="320.0" y="717.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">4 层 Transformer · 宽度 256</text>
+      <text x="320.0" y="739.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">候选间 Self-Attn · 场景 Cross-Attn</text>
+    </g>
+    <text x="333" y="769" fill="#6941ac" font-size="14" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="start">候选隐状态 z<tspan baseline-shift="sub" font-size="72%">i</tspan>
+    </text>
+    <g id="score-heads">
+      <rect x="165" y="775" width="310" height="69" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="805.85" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Score Heads H</text>
+      <text x="320.0" y="827.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">H(z<tspan baseline-shift="sub" font-size="72%">i</tspan> + e<tspan baseline-shift="sub" font-size="72%">t</tspan>) → 六项 logits</text>
+    </g>
+    <g id="encoded-ego-state">
+      <rect x="61" y="783" width="86" height="54" rx="14" fill="#ffffff" stroke="#8395ae" stroke-width="1.7" />
+      <text x="104.0" y="805.6" fill="#4d617c" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">自车状态</text>
+      <text x="104.0" y="825.6" fill="#56677e" font-size="14" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">编码 e<tspan baseline-shift="sub" font-size="72%">t</tspan>
+      </text>
+    </g>
+    <g id="utility-aggregation">
+      <rect x="165" y="864" width="310" height="72" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="886.65" fill="#6941ac" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">候选评分 Ĵ</text>
+      <text x="320.0" y="906.65" fill="#56677e" font-size="15" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">Sigmoid → 按基准加权聚合</text>
+      <text x="320.0" y="926.65" fill="#56677e" font-size="15" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">Σ<tspan baseline-shift="sub" font-size="72%">m∈G</tspan> α<tspan baseline-shift="sub" font-size="72%">m</tspan> log p<tspan baseline-shift="sub" font-size="72%">m</tspan> + log(Σ<tspan baseline-shift="sub" font-size="72%">m∈A</tspan> β<tspan baseline-shift="sub" font-size="72%">m</tspan>p<tspan baseline-shift="sub" font-size="72%">m</tspan>)</text>
+    </g>
+    <g id="inertial-reranking">
+      <rect x="165" y="952" width="310" height="83" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="978.5" fill="#6941ac" font-size="20" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">惯性重排序 · NAVSIM-v2</text>
+      <text x="320.0" y="1000.5" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">LQR 滚动轨迹 → EC 兼容标记 c</text>
+      <text x="320.0" y="1022.5" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">Ĵ + log(0.01 + 0.99c)</text>
+    </g>
+    <g id="previous-plan">
+      <rect x="61" y="966" width="86" height="52" rx="14" fill="#ffffff" stroke="#8395ae" stroke-width="1.7" />
+      <text x="104.0" y="987.6" fill="#4d617c" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">上一帧</text>
+      <text x="104.0" y="1007.6" fill="#56677e" font-size="14" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">规划轨迹</text>
+    </g>
+    <g id="selected-plan">
+      <rect x="165" y="1059" width="310" height="56" rx="14" fill="#f4effb" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="320.0" y="1094.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">最高分候选 → 规划轨迹</text>
+    </g>
+    <rect x="180" y="1123" width="104" height="22" rx="2" fill="#edf4ff" />
+    <text x="232" y="1139" fill="#6941ac" font-size="15" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="500" text-anchor="middle">传至下一帧</text>
+    <g id="generated-trajectories">
+      <rect x="632" y="232" width="296" height="75" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="780.0" y="265.85" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">生成候选 × 64</text>
+      <text x="780.0" y="287.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">来自推理主链中的轨迹生成器</text>
+    </g>
+    <g id="bank-trajectories">
+      <rect x="953" y="232" width="296" height="75" rx="14" fill="#ffffff" stroke="#35a995" stroke-width="1.7" />
+      <text x="1101.0" y="265.85" fill="#107766" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">场景匹配轨迹库</text>
+      <text x="1101.0" y="287.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">每步采样 16 条扰动轨迹</text>
+    </g>
+    <g id="executed-trajectories">
+      <rect x="1274" y="232" width="296" height="75" rx="14" fill="#ffffff" stroke="#d58a32" stroke-width="1.7" />
+      <text x="1422.0" y="265.85" fill="#90551c" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">日志执行轨迹 × 1</text>
+      <text x="1422.0" y="287.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">驾驶日志中的实际轨迹</text>
+    </g>
+    <g id="generated-action-encoder">
+      <rect x="632" y="358" width="296" height="65" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="780.0" y="386.85" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Action Encoder φ</text>
+      <text x="780.0" y="408.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">候选坐标 StopGrad</text>
+    </g>
+    <g id="generated-predictor">
+      <rect x="632" y="449" width="296" height="72" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="780.0" y="481.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">共享预测器 P</text>
+      <text x="780.0" y="503.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">读取当前场景 tokens  s<tspan baseline-shift="sub" font-size="72%">t</tspan>
+      </text>
+    </g>
+    <g id="bank-action-encoder">
+      <rect x="953" y="358" width="296" height="65" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="1101.0" y="386.85" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Action Encoder φ</text>
+      <text x="1101.0" y="408.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">轨迹坐标 → 查询 tokens</text>
+    </g>
+    <g id="bank-predictor">
+      <rect x="953" y="449" width="296" height="72" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="1101.0" y="481.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">共享预测器 P</text>
+      <text x="1101.0" y="503.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">读取当前场景 tokens  s<tspan baseline-shift="sub" font-size="72%">t</tspan>
+      </text>
+    </g>
+    <g id="executed-action-encoder">
+      <rect x="1274" y="358" width="296" height="65" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="1422.0" y="386.85" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Action Encoder φ</text>
+      <text x="1422.0" y="408.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">执行轨迹 → 单个查询 token</text>
+    </g>
+    <g id="executed-predictor">
+      <rect x="1274" y="449" width="296" height="72" rx="14" fill="#ffffff" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="1422.0" y="481.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">共享预测器 P</text>
+      <text x="1422.0" y="503.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">读取场景 tokens · StopGrad</text>
+    </g>
+    <g id="generated-score-heads">
+      <rect x="632" y="560" width="296" height="69" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="780.0" y="590.85" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Score Heads H</text>
+      <text x="780.0" y="612.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">z<tspan baseline-shift="sub" font-size="72%">i</tspan> + e<tspan baseline-shift="sub" font-size="72%">t</tspan> → 六项 logits</text>
+    </g>
+    <g id="bank-score-heads">
+      <rect x="953" y="560" width="296" height="69" rx="14" fill="#ffffff" stroke="#35a995" stroke-width="1.7" />
+      <text x="1101.0" y="590.85" fill="#107766" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">Score Heads H</text>
+      <text x="1101.0" y="612.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">z<tspan baseline-shift="sub" font-size="72%">i</tspan> + e<tspan baseline-shift="sub" font-size="72%">t</tspan> → 六项 logits</text>
+    </g>
+    <g id="future-visual-readout">
+      <rect x="1274" y="560" width="296" height="69" rx="14" fill="#ffffff" stroke="#d58a32" stroke-width="1.7" />
+      <text x="1422.0" y="590.85" fill="#90551c" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">线性视觉读出 g</text>
+      <text x="1422.0" y="612.85" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">执行轨迹隐状态 → 384 维特征</text>
+    </g>
+    <g id="generated-outcome-targets">
+      <rect x="680" y="676" width="230" height="96" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="795.0" y="708.65" fill="#245da8" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">NAVSIM 仿真评估</text>
+      <text x="795.0" y="730.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">逐条评估生成候选</text>
+      <text x="795.0" y="752.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">得到六项结果标签</text>
+    </g>
+    <g id="bank-outcome-targets">
+      <rect x="1001" y="676" width="230" height="96" rx="14" fill="#ffffff" stroke="#35a995" stroke-width="1.7" />
+      <text x="1116.0" y="708.65" fill="#107766" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">离线仿真标签</text>
+      <text x="1116.0" y="730.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">随场景轨迹库预存</text>
+      <text x="1116.0" y="752.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">按有效标签计算损失</text>
+    </g>
+    <g id="observed-future-target">
+      <rect x="1322" y="676" width="230" height="96" rx="14" fill="#ffffff" stroke="#d58a32" stroke-width="1.7" />
+      <text x="1437.0" y="708.65" fill="#90551c" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">t + 2 秒真实前视图</text>
+      <text x="1437.0" y="730.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">冻结 DINOv2 + Mean Pool</text>
+      <text x="1437.0" y="752.65" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">384 维目标特征</text>
+    </g>
+    <g id="generated-outcome-loss">
+      <rect x="632" y="811" width="296" height="77" rx="14" fill="#f7faff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="780.0" y="845.15" fill="#245da8" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">ℒ<tspan baseline-shift="sub" font-size="72%">score</tspan> · 生成候选结果监督</text>
+      <text x="780.0" y="867.15" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">六项 BCE，EP 使用软标签</text>
+    </g>
+    <g id="bank-outcome-loss">
+      <rect x="953" y="811" width="296" height="77" rx="14" fill="#f5fbf9" stroke="#35a995" stroke-width="1.7" />
+      <text x="1101.0" y="845.15" fill="#107766" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">ℒ<tspan baseline-shift="sub" font-size="72%">bank</tspan> · 轨迹库结果监督</text>
+      <text x="1101.0" y="867.15" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">五项平均 BCE + 0.1 × EP 的 L1</text>
+    </g>
+    <g id="future-feature-loss">
+      <rect x="1274" y="811" width="296" height="77" rx="14" fill="#fffaf3" stroke="#d58a32" stroke-width="1.7" />
+      <text x="1422.0" y="845.15" fill="#90551c" font-size="19" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">ℒ<tspan baseline-shift="sub" font-size="72%">fut</tspan> · 未来视觉监督</text>
+      <text x="1422.0" y="867.15" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">预测与目标特征的余弦距离</text>
+    </g>
+    <g id="winner-take-all-imitation">
+      <rect x="632" y="979" width="296" height="98" rx="14" fill="#ffffff" stroke="#5088dc" stroke-width="1.7" />
+      <text x="780.0" y="1013.3499999999999" fill="#245da8" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">ℒ<tspan baseline-shift="sub" font-size="72%">WTA</tspan> · 轨迹模仿</text>
+      <text x="780.0" y="1035.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">64 条生成轨迹对照日志轨迹</text>
+      <text x="780.0" y="1057.35" fill="#56677e" font-size="17" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">仅对最近候选计算 L1 损失</text>
+    </g>
+    <g id="joint-training-objective">
+      <rect x="953" y="979" width="617" height="98" rx="14" fill="#f4effb" stroke="#9a77d5" stroke-width="1.7" />
+      <text x="1261.5" y="1024.35" fill="#6941ac" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="600" text-anchor="middle">联合训练目标</text>
+      <text x="1261.5" y="1046.35" fill="#56677e" font-size="21" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="middle">ℒ = ℒ<tspan baseline-shift="sub" font-size="72%">WTA</tspan> + ℒ<tspan baseline-shift="sub" font-size="72%">score</tspan> + ℒ<tspan baseline-shift="sub" font-size="72%">fut</tspan> + 0.5 × ℒ<tspan baseline-shift="sub" font-size="72%">bank</tspan>
+      </text>
+    </g>
+    <text x="630" y="1128" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="start">G 组  NC 无碰撞 · DAC 可行驶区域 · DDC 行驶方向     A 组  TTC 距碰撞时间 · EP 行驶进度 · C 舒适性</text>
+  </g>
+  <text x="45" y="1180" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="start">依据  arXiv:2609.36438v1 · 图 2、第 3 节及附录 A.2</text>
+  <text x="1595" y="1180" fill="#56677e" font-size="16" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif" font-weight="400" text-anchor="end">EC 为跨帧舒适性检查，首帧按学习评分选轨。</text>
+</svg>
