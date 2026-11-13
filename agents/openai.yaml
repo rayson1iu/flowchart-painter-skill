@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flowchart"
+  short_description: "浅色圆角流程图：先制作可编辑 SVG，再导出并检查 PNG"
+  default_prompt: "使用 $flowchart 将以下内容画成浅色圆角流程图，先生成可编辑 SVG，再导出 PNG，保留所有标签和连接。"

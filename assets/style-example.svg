@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+<title>BEV 与向量上下文融合规划流程图</title>
+<desc>摄像头 / LiDAR 经 SharedBEVEncoder，PNC 向量上下文经 VectorEncoder，汇入 FusionBackbone，再经 PlannerDecoder 输出自车路径 / 轨迹 / 概率。所有标签为可编辑文字。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7e58c2"/></marker></defs>
+<rect width="1200" height="1200" fill="white"/>
+<g font-family="PingFang SC, Microsoft YaHei, Arial, sans-serif" text-anchor="middle">
+<rect x="40" y="32" width="540" height="528" rx="22" fill="#edf4ff"/>
+<rect x="620" y="32" width="540" height="528" rx="22" fill="#eaf8f3"/>
+
+<text x="310" y="89" font-size="28" fill="#3479d6" font-weight="400">摄像头 / LiDAR</text>
+<text x="890" y="89" font-size="28" fill="#159c88" font-weight="400">PNC 向量上下文</text>
+<path id="sensor-input" d="M310 111 V151" fill="none" stroke="#3479d6" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path id="vector-input" d="M890 111 V151" fill="none" stroke="#159c88" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect id="shared-bev-encoder" x="100" y="155" width="420" height="316" rx="14" fill="white" stroke="#5088dc" stroke-width="2"/>
+<text x="310" y="199" font-size="27" fill="#3479d6" font-weight="400">SharedBEVEncoder</text>
+<text x="310" y="247" font-size="24" fill="#778497" font-weight="400">图像 ResNet + Neck</text>
+<text x="310" y="291" font-size="24" fill="#778497" font-weight="400">View Transformer</text>
+<text x="310" y="335" font-size="24" fill="#778497" font-weight="400">PointPillar</text>
+<text x="310" y="379" font-size="24" fill="#778497" font-weight="400">LiDAR 时序 Bank</text>
+<text x="310" y="423" font-size="24" fill="#778497" font-weight="400">BEV Fusion</text>
+<rect id="vector-encoder" x="680" y="155" width="420" height="158" rx="14" fill="white" stroke="#35a995" stroke-width="2"/>
+<text x="890" y="199" font-size="27" fill="#159c88" font-weight="400">VectorEncoder</text>
+<text x="890" y="246" font-size="24" fill="#778497" font-weight="400">UniModel LightMap</text>
+<text x="890" y="282" font-size="24" fill="#778497" font-weight="400">Encoder</text>
+<path id="bev-to-merge" d="M310 471 V592 H600" fill="none" stroke="#3479d6" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="153" y="496" width="314" height="38" rx="5" fill="#edf4ff"/>
+<text x="310" y="523" font-size="22" fill="#3479d6" font-weight="400">fused BEV 多尺度特征</text>
+<path id="vector-to-merge" d="M890 313 V592 H600" fill="none" stroke="#159c88" stroke-width="2.5" stroke-linejoin="round"/>
+<path id="merge-to-fusion" d="M600 592 V632" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect id="fusion-backbone" x="350" y="636" width="500" height="146" rx="14" fill="white" stroke="#9a77d5" stroke-width="2"/>
+<text x="600" y="677" font-size="28" fill="#865ac9" font-weight="400">FusionBackbone</text>
+<text x="600" y="719" font-size="24" fill="#778497" font-weight="400">BEV token → Ego Query</text>
+<text x="600" y="756" font-size="24" fill="#778497" font-weight="400">Cross-Attention</text>
+<path id="fusion-to-planner" d="M600 782 V824" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect id="planner-decoder" x="350" y="828" width="500" height="144" rx="14" fill="white" stroke="#9a77d5" stroke-width="2"/>
+<text x="600" y="869" font-size="28" fill="#865ac9" font-weight="400">PlannerDecoder</text>
+<text x="600" y="911" font-size="24" fill="#778497" font-weight="400">UniModel LightMap</text>
+<text x="600" y="947" font-size="24" fill="#778497" font-weight="400">Flow Matching</text>
+<path id="planner-to-output" d="M600 972 V1014" fill="none" stroke="#7e58c2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect id="output" x="350" y="1018" width="500" height="66" rx="14" fill="#f4effb" stroke="#9a77d5" stroke-width="2"/>
+<text x="600" y="1060" font-size="27" fill="#865ac9" font-weight="400">自车路径 / 轨迹 / 概率</text>
+</g></svg>
